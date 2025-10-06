@@ -19,6 +19,8 @@ const NoLimit Limit = 0
 // DataWriter represents a writer interface for writing columns and data rows
 // using the Postgres wire to the connected client.
 type DataWriter interface {
+	// Bring back old function
+	Define(Columns) error
 	// Row writes a single data row containing the values inside the given slice to
 	// the underlaying Postgres client. The column headers have to be written before
 	// sending rows. Each item inside the slice represents a single column value.
