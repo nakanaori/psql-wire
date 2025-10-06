@@ -167,11 +167,7 @@ func (writer *dataWriter) Complete(description string) error {
 	}
 
 	defer writer.close()
-	if err := commandComplete(writer.client, description); err != nil {
-		return err
-	}
-
-	return readyForQuery(writer.client, types.ServerIdle)
+	return commandComplete(writer.client, description)
 }
 
 func (writer *dataWriter) close() {
