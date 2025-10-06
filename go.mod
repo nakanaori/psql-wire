@@ -28,3 +28,5 @@ tool (
 	golang.org/x/tools/cmd/goimports
 	golang.org/x/tools/cmd/stringer
 )
+
+replace github.com/jeroenrinzema/psql-wire => github.com/nakanaori/psql-wire v0.0.0-20251001191729-e22182dbafa2
