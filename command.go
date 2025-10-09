@@ -456,6 +456,12 @@ func (srv *Session) handleBind(ctx context.Context, reader *buffer.Reader, write
 		return err
 	}
 
+	srv.logger.Debug("Bind result formats",
+		slog.String("portal", name),
+		slog.String("statement", statement),
+		slog.Any("formats", formats),
+	)
+
 	stmt, err := srv.Statements.Get(ctx, statement)
 	if err != nil {
 		return err
