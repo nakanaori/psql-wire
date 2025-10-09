@@ -332,6 +332,12 @@ func (srv *Session) handleParse(ctx context.Context, reader *buffer.Reader, writ
 
 	srv.logger.Debug("incoming extended query", slog.String("query", query), slog.String("name", name), slog.Int("parameters", len(statement.parameters)))
 
+	srv.logger.Debug("parse produced",
+		slog.String("name", name),
+		slog.Int("param_count", len(statement.parameters)),
+		slog.Int("column_count", len(statement.columns)),
+	)
+
 	err = srv.Statements.Set(ctx, name, statement)
 	if err != nil {
 		return ErrorCode(writer, err)
@@ -365,6 +371,12 @@ func (srv *Session) handleDescribe(ctx context.Context, reader *buffer.Reader, w
 			return ErrorCode(writer, errors.New("unknown statement"))
 		}
 
+		srv.logger.Debug("Describe(S) resolved statement",
+			slog.String("name", name), // Prisma uses ""
+			slog.Int("param_count", len(statement.parameters)),
+			slog.Int("column_count", len(statement.columns)),
+		)
+
 		err = srv.writeParameterDescription(writer, statement.parameters)
 		if err != nil {
 			return err
@@ -381,6 +393,12 @@ func (srv *Session) handleDescribe(ctx context.Context, reader *buffer.Reader, w
 		if portal == nil {
 			return ErrorCode(writer, errors.New("unknown portal"))
 		}
+
+		srv.logger.Debug("Describe(P) resolved portal",
+			slog.String("name", name),
+			slog.Int("format_count", len(portal.formats)),
+			slog.Int("column_count", len(portal.statement.columns)),
+		)
 
 		return srv.writeColumnDescription(ctx, writer, portal.formats, portal.statement.columns)
 	}
@@ -406,9 +424,13 @@ func (srv *Session) writeParameterDescription(writer *buffer.Writer, parameters 
 // https://www.postgresql.org/docs/15/protocol-message-formats.html
 func (srv *Session) writeColumnDescription(ctx context.Context, writer *buffer.Writer, formats []FormatCode, columns Columns) error {
 	if len(columns) == 0 {
+		srv.logger.Debug("writeColumnDescription: NoData (zero columns)")
+
 		writer.Start(types.ServerNoData)
 		return writer.End()
 	}
+
+	srv.logger.Debug("writeColumnDescription: RowDescription", slog.Int("columns", len(columns)))
 
 	return columns.Define(ctx, writer, formats)
 }
